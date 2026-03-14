@@ -1,0 +1,207 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", "Segoe UI", sans-serif;
+    background: #0f1115;
+    color: #e6e6e6;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Главный контейнер */
+
+.container {
+    max-width: 1400px;
+    margin: auto;
+    background: #1a1d24;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    overflow: hidden;
+}
+
+h1 {
+    background: #15181f;
+    color: #ffffff;
+    padding: 22px;
+    text-align: center;
+    font-size: 26px;
+    border-bottom: 1px solid #2a2f3a;
+}
+
+/* Основная зона */
+
+.constructor {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Панель управления */
+
+.controls {
+    width: 320px;
+    background: #15181f;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #2a2f3a;
+}
+
+.controls h2 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    border-bottom: 1px solid #2a2f3a;
+    padding-bottom: 10px;
+}
+
+/* Группы настроек */
+
+.control-group {
+    margin-bottom: 22px;
+}
+
+.control-group label {
+    display: block;
+    font-size: 13px;
+    margin-bottom: 6px;
+    color: #9aa3ad;
+}
+
+/* Select */
+
+.control-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #2a2f3a;
+    background: #0f1115;
+    color: #e6e6e6;
+    font-size: 14px;
+}
+
+.control-group select:focus {
+    outline: none;
+    border-color: #4c8dff;
+}
+
+/* Список медалей */
+
+.medals-list {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid #2a2f3a;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.medal-item {
+    display: flex;
+    align-items: center;
+    padding: 7px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+
+.medal-item:hover {
+    background: #222631;
+}
+
+.medal-item input {
+    margin-right: 8px;
+}
+
+/* Кнопки */
+
+.generate-btn,
+.save-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.generate-btn {
+    background: #3a7afe;
+    color: white;
+}
+
+.generate-btn:hover {
+    background: #5a92ff;
+}
+
+.save-btn {
+    background: #2e333d;
+    color: #e6e6e6;
+}
+
+.save-btn:hover {
+    background: #3b414c;
+}
+
+/* Правая часть */
+
+.preview {
+    flex: 1;
+    background: #15181f;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #2a2f3a;
+}
+
+.preview h2 {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #2a2f3a;
+    padding-bottom: 8px;
+}
+
+/* Канвас */
+
+.canvas-container {
+    background: #0f1115;
+    border-radius: 10px;
+    padding: 20px;
+    min-height: 700px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#resultCanvas {
+    max-width: 100%;
+    max-height: 800px;
+    border-radius: 6px;
+}
+
+/* Скроллбар */
+
+.medals-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.medals-list::-webkit-scrollbar-thumb {
+    background: #3a3f4b;
+    border-radius: 4px;
+}
+
+/* Адаптивность */
+
+@media (max-width: 1000px) {
+
+.constructor {
+    flex-direction: column;
+}
+
+.controls {
+    width: 100%;
+}
+
+}

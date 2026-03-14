@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доска почёта - конструктор</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Конструктор медалей</h1>
+        
+        <div class="constructor">
+            <!-- Панель управления слева -->
+            <div class="controls">
+                <h2>Настройки</h2>
+                
+                <div class="control-group">
+                    <label>Пол:</label>
+                    <select id="gender">
+                        <option value="male">Мужской</option>
+                        <option value="female">Женский</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Вид службы:</label>
+                    <select id="service">
+                        <option value="police">Полиция</option>
+                        <option value="vnz">ВНГ</option>
+                        <option value="justice">Юстиция</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Звание:</label>
+                    <select id="rank">
+                        <option value="ryadovoy">Рядовой</option>
+                        <option value="serzhant">Сержант</option>
+                        <option value="starshina">Старшина</option>
+                        <option value="praporshchik">Прапорщик</option>
+                        <option value="leytenant">Лейтенант</option>
+                        <option value="starlyeytenant">Старший лейтенант</option>
+                        <option value="kapitan">Капитан</option>
+                        <option value="mayor">Майор</option>
+                        <option value="podpolkovnik">Подполковник</option>
+                        <option value="polkovnik">Полковник</option>
+                        <option value="genmayor">Генерал-майор</option>
+                        <option value="genleytenant">Генерал-лейтенант</option>
+                        <option value="genpolkovnik">Генерал-полковник</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Тип наград:</label>
+                    <select id="medalType">
+                        <option value="full">Медали</option>
+                        <option value="ribbons">Планки</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <h3>Выберите медали:</h3>
+                    <div class="medals-list" id="medalsList">
+                        <label class="medal-item">
+                            <input type="checkbox" value="hero"> 
+                            Герой Республики Провинция
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="valor"> 
+                            За доблесть в службе
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="courage"> 
+                            За смелость во имя спасения
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="special"> 
+                            За заслуги в особых условиях
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="labor"> 
+                            За трудовую доблесть
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="putilin"> 
+                            И.Д. Путилина
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="road"> 
+                            За укрепление безопасности дорожного движения
+                        </label>
+                        <label class="medal-item">
+                            <input type="checkbox" value="science"> 
+                            За заслуги в научной и педагогической деятельности
+                        </label>
+                    </div>
+                </div>
+                
+                <button id="generateBtn" class="generate-btn">Сгенерировать</button>
+                <button id="saveBtn" class="save-btn">Сохранить результат</button>
+            </div>
+            
+            <!-- Область предпросмотра справа -->
+            <div class="preview">
+                <h2>Результат:</h2>
+                <div class="canvas-container">
+                    <canvas id="resultCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
