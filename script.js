@@ -5,6 +5,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const genderSelect = document.getElementById('gender');
     const serviceSelect = document.getElementById('service');
     const rankSelect = document.getElementById('rank');
+    const vnzUniformSelect = document.getElementById('vnzUniform');
+    const vnzUniformGroup = document.getElementById('vnzUniformGroup');
+    const medalTypeSelect = document.getElementById('medalType');
+    const medalTypeGroup = medalTypeSelect.closest('.control-group');
+    
+    let chevronText = ''; // Глобальная переменная для хранения текста шеврона
     
     const imageCache = {
         person: null,
@@ -14,78 +20,122 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('generateBtn').addEventListener('click', generateImage);
     document.getElementById('saveBtn').addEventListener('click', saveImage);
     
+    // Функция для добавления поля ввода текста на шевроне
+    function addChevronTextInput() {
+        // Проверяем, существует ли уже поле ввода
+        if (document.getElementById('chevronTextGroup')) return;
+        
+        const chevronGroup = document.createElement('div');
+        chevronGroup.className = 'control-group';
+        chevronGroup.id = 'chevronTextGroup';
+        chevronGroup.innerHTML = `
+            <label>Текст на шевроне:</label>
+            <input type="text" id="chevronText" maxlength="50" placeholder="Введите текст..." style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #2a2f3a; background: #0f1115; color: #e6e6e6; font-size: 14px;">
+        `;
+        
+        // Вставляем после выбора типа наград (который скоро скроем)
+        medalTypeGroup.insertAdjacentElement('afterend', chevronGroup);
+        
+        document.getElementById('chevronText').addEventListener('input', function(e) {
+            chevronText = e.target.value;
+            debounceGenerate();
+        });
+    }
+    
+    // Функция для удаления поля ввода текста
+    function removeChevronTextInput() {
+        const chevronGroup = document.getElementById('chevronTextGroup');
+        if (chevronGroup) {
+            chevronGroup.remove();
+            chevronText = '';
+        }
+    }
+    
+    // Функция для обновления видимости типа наград в зависимости от формы ВНГ
+    function updateMedalTypeVisibility() {
+        const service = serviceSelect.value;
+        const vnzUniform = vnzUniformSelect ? vnzUniformSelect.value : 'office';
+        
+        if (service === 'vnz') {
+            // Для любой формы ВНГ скрываем выбор типа наград
+            medalTypeGroup.style.display = 'none';
+            
+            if (vnzUniform === 'office') {
+                // Для офисной формы - планки и поле для текста
+                medalTypeSelect.value = 'ribbons';
+                addChevronTextInput();
+            } else if (vnzUniform === 'parade') {
+                // Для парадной формы - медали и без поля для текста
+                medalTypeSelect.value = 'full';
+                removeChevronTextInput();
+            }
+        } else {
+            // Для других служб - показываем тип наград и убираем поле для текста
+            medalTypeGroup.style.display = 'block';
+            medalTypeSelect.disabled = false;
+            medalTypeSelect.style.opacity = '1';
+            medalTypeSelect.style.cursor = 'pointer';
+            removeChevronTextInput();
+        }
+    }
+    
     function updateAvailableOptions() {
         const gender = genderSelect.value;
-        const rank = rankSelect.value;
-        const isGeneral = isGeneralRank(rank);
         
+        // Сохраняем текущие значения
         const currentService = serviceSelect.value;
+        const currentRank = rankSelect.value;
         
-        serviceSelect.innerHTML = '';
-        
-        let availableServices = [];
-        
-        if (gender === 'female') {
-            availableServices = [
-                { value: 'police', text: 'Полиция' },
-                { value: 'justice', text: 'Юстиция' }
-            ];
-        } else {
-            availableServices = [
-                { value: 'police', text: 'Полиция' },
-                { value: 'vnz', text: 'ВНГ', disabled: true }, // ВНГ выключено
-                { value: 'justice', text: 'Юстиция' }
-            ];
-        }
-        
-        availableServices.forEach(service => {
-            const option = document.createElement('option');
-            option.value = service.value;
-            option.textContent = service.text;
-            
-            if (service.disabled) {
-                option.disabled = true;
-            }
-            
-            serviceSelect.appendChild(option);
-        });
-        
-        if (availableServices.some(s => s.value === currentService && !s.disabled)) {
-            serviceSelect.value = currentService;
-        } else {
-            const firstAvailable = Array.from(serviceSelect.options).find(opt => !opt.disabled);
-            if (firstAvailable) {
-                serviceSelect.value = firstAvailable.value;
-            }
-        }
-        
+        // Обновляем доступность званий в зависимости от выбранной службы
         updateRanksAvailability();
         
-        const currentRank = rankSelect.value;
-        const isJuniorRank = ['ryadovoy', 'serzhant', 'starshina', 'praporshchik'].includes(currentRank);
-        const service_ = serviceSelect.value;
-        
-        if (service_ !== 'police' && (isGeneralRank(currentRank) || isJuniorRank)) {
-            const firstAvailable = Array.from(rankSelect.options).find(opt => !opt.disabled);
-            if (firstAvailable) {
-                rankSelect.value = firstAvailable.value;
-            }
+        // Показываем/скрываем выбор формы для ВНГ и поле для текста
+        if (serviceSelect.value === 'vnz') {
+            vnzUniformGroup.style.display = 'block';
+            updateMedalTypeVisibility();
+        } else {
+            vnzUniformGroup.style.display = 'none';
+            removeChevronTextInput();
+            medalTypeGroup.style.display = 'block';
+            medalTypeSelect.disabled = false;
+            medalTypeSelect.style.opacity = '1';
+            medalTypeSelect.style.cursor = 'pointer';
+        }
+    }
+    
+    function getAvailableRanksForService(service) {
+        if (service === 'vnz') {
+            return VNZ_AVAILABLE_RANKS;
+        } else if (service === 'justice') {
+            // Для юстиции доступны офицерские звания (от лейтенанта до полковника)
+            return ['leytenant', 'starlyeytenant', 'kapitan', 'mayor', 'podpolkovnik', 'polkovnik'];
+        } else {
+            // Для полиции доступны все звания
+            return Array.from(rankSelect.options).map(opt => opt.value);
         }
     }
     
     function updateRanksAvailability() {
         const service = serviceSelect.value;
-        const currentRank = rankSelect.value;
         
         const rankOptions = Array.from(rankSelect.options);
         
         rankOptions.forEach(option => {
             const rankValue = option.value;
             const isGeneral = isGeneralRank(rankValue);
-            
             const isJuniorRank = ['ryadovoy', 'serzhant', 'starshina', 'praporshchik'].includes(rankValue);
             
-            if (service !== 'police') {
+            if (service === 'vnz') {
+                // Для ВНГ доступны только звания из VNZ_AVAILABLE_RANKS
+                if (VNZ_AVAILABLE_RANKS.includes(rankValue)) {
+                    option.disabled = false;
+                    option.style.color = '';
+                } else {
+                    option.disabled = true;
+                    option.style.color = '#999';
+                }
+            } else if (service === 'justice') {
+                // Для юстиции доступны офицерские звания (от лейтенанта до полковника)
                 if (isGeneral || isJuniorRank) {
                     option.disabled = true;
                     option.style.color = '#999';
@@ -94,12 +144,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     option.style.color = '';
                 }
             } else {
+                // Для полиции доступны все звания
                 option.disabled = false;
                 option.style.color = '';
             }
         });
         
+        // Проверяем, доступно ли текущее выбранное звание
         if (rankSelect.selectedOptions[0] && rankSelect.selectedOptions[0].disabled) {
+            // Если текущее звание недоступно, выбираем первое доступное
             const firstAvailable = Array.from(rankSelect.options).find(opt => !opt.disabled);
             if (firstAvailable) {
                 rankSelect.value = firstAvailable.value;
@@ -132,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function() {
             };
             
             img.onerror = () => {
+                // Пробуем загрузить еще раз с кэш-бастером
                 const img2 = new Image();
                 img2.onload = () => resolve(img2);
                 img2.onerror = () => reject(new Error(`Не удалось загрузить: ${src}`));
@@ -159,11 +213,11 @@ document.addEventListener('DOMContentLoaded', function() {
             try {
                 const dataURL = tempCanvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = 'dostka-pocheta.png';
+                link.download = 'doska-pochyota.png';
                 link.href = dataURL;
                 link.click();
             } catch (e) {
-                
+                // Если не получается сохранить, открываем в новом окне
                 const dataURL = canvas.toDataURL('image/png');
                 const newWindow = window.open();
                 newWindow.document.write('<img src="' + dataURL + '" alt="Доска почёта"/>');
@@ -175,11 +229,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Функция для рисования текста на шевроне
+    function drawChevronText(ctx, text, positions) {
+        if (!text || !positions || !positions.chevronText) return;
+        
+        const chevronPos = positions.chevronText;
+        
+        ctx.save();
+        
+        // Переносим контекст в точку центра текста
+        ctx.translate(chevronPos.x, chevronPos.y);
+        // Поворачиваем
+        ctx.rotate(chevronPos.rotation);
+        
+        // Настройки текста
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#d0d3d4';
+        
+        // Пробуем разные размеры шрифта
+        let fontSize = 38.5;
+        const minFontSize = 10;
+        const fontFamily = 'Arial Narrow Bold, Arial Narrow, Arial, sans-serif';
+        
+        // Функция для проверки ширины текста
+        function getTextWidth(text, size) {
+            ctx.font = `${size}px ${fontFamily}`;
+            return ctx.measureText(text).width;
+        }
+        
+        // Уменьшаем размер шрифта пока текст не влезет
+        while (fontSize > minFontSize && getTextWidth(text, fontSize) > chevronPos.maxWidth) {
+            fontSize -= 0.1;
+        }
+        
+        // Устанавливаем финальный шрифт
+        ctx.font = `${fontSize}px ${fontFamily}`;
+                
+        // Рисуем текст
+        ctx.fillText(text, 0, 0);
+        
+        ctx.restore();
+    }
+
     async function generateImage() {
         const gender = genderSelect.value;
         const service = serviceSelect.value;
         const rank = rankSelect.value;
-        const medalType = document.getElementById('medalType').value;
+        const medalType = medalTypeSelect.value;
+        const vnzUniform = vnzUniformSelect ? vnzUniformSelect.value : 'office';
+        
+        // Добавляем проверку соответствия формы и типа наград для ВНГ
+        if (service === 'vnz') {
+            if (vnzUniform === 'office' && medalType !== 'ribbons') {
+                alert('Для офисной формы ВНГ доступны только планки');
+                medalTypeSelect.value = 'ribbons';
+                return generateImage(); // Перезапускаем с правильным типом
+            }
+            if (vnzUniform === 'parade' && medalType !== 'full') {
+                alert('Для парадной формы ВНГ доступны только медали');
+                medalTypeSelect.value = 'full';
+                return generateImage(); // Перезапускаем с правильным типом
+            }
+        }
         
         const checkboxes = document.querySelectorAll('#medalsList input:checked');
         const selectedMedals = Array.from(checkboxes).map(cb => cb.value);
@@ -194,7 +306,13 @@ document.addEventListener('DOMContentLoaded', function() {
             
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            const personPhotoPath = `img/persons/${gender}/${service}/${rank}.png`;
+            // Для ВНГ используем разные папки в зависимости от формы
+            let personPhotoPath;
+            if (service === 'vnz') {
+                personPhotoPath = `img/persons/${gender}/${service}/${vnzUniform}/${rank}.png`;
+            } else {
+                personPhotoPath = `img/persons/${gender}/${service}/${rank}.png`;
+            }
             
             const personImg = await loadImage(personPhotoPath);
             
@@ -209,8 +327,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`Нет координат для ${gender}/${service}/${rank} с типом ${medalType}`);
             }
             
-            const distribution = distributeMedals(selectedMedals, medalType);
+            // Рисуем текст на шевроне только для офисной формы ВНГ
+            if (service === 'vnz' && vnzUniform === 'office' && chevronText) {
+                drawChevronText(ctx, chevronText, positions);
+            }
             
+            const distribution = distributeMedals(selectedMedals, medalType);
             
             const drawOrder = [...MEDAL_HIERARCHY];
             
@@ -227,6 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             ctx.drawImage(medalImg, pos[0], pos[1]);
                         }
                     } catch (medalError) {
+                        console.warn(`Не удалось загрузить медаль: ${medalItem.medal}`, medalError);
                     }
                 }
             }
@@ -247,16 +370,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return MEDAL_HIERARCHY.indexOf(b) - MEDAL_HIERARCHY.indexOf(a);
         });
         
-
         const distribution = [];
-
+        
         if (hasHero) {
             distribution.push({
                 medal: 'hero',
                 position: 'hero'
             });
         }
-
+        
         if (medalType === 'ribbons') {
             sortedByImportance.forEach((medal, index) => {
                 const position = (index + 1).toString();
@@ -272,8 +394,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 positionsToUse = POSITION_RULES[sortedByImportance.length] || [];
             }
-
-
+            
             sortedByImportance.forEach((medal, index) => {
                 if (index < positionsToUse.length) {
                     distribution.push({
@@ -286,22 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         return distribution;
     }
-
-    genderSelect.addEventListener('change', function() {
-        updateAvailableOptions();
-        debounceGenerate();
-    });
     
-    serviceSelect.addEventListener('change', function() {
-        updateRanksAvailability();
-        debounceGenerate();
-    });
-    
-    rankSelect.addEventListener('change', function() {
-        updateAvailableOptions(); 
-        debounceGenerate();
-    });
-
     function debounceGenerate() {
         clearTimeout(window.generateTimeout);
         window.generateTimeout = setTimeout(() => {
@@ -310,16 +416,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 500);
     }
-
+    
+    // Обработчики событий
+    genderSelect.addEventListener('change', function() {
+        updateAvailableOptions();
+        debounceGenerate();
+    });
+    
+    serviceSelect.addEventListener('change', function() {
+        updateRanksAvailability();
+        
+        // Показываем/скрываем элементы ВНГ
+        if (serviceSelect.value === 'vnz') {
+            vnzUniformGroup.style.display = 'block';
+            updateMedalTypeVisibility();
+        } else {
+            vnzUniformGroup.style.display = 'none';
+            removeChevronTextInput();
+            medalTypeGroup.style.display = 'block';
+            medalTypeSelect.disabled = false;
+            medalTypeSelect.style.opacity = '1';
+            medalTypeSelect.style.cursor = 'pointer';
+        }
+        
+        debounceGenerate();
+    });
+    
+    rankSelect.addEventListener('change', function() {
+        debounceGenerate();
+    });
+    
+    if (vnzUniformSelect) {
+        vnzUniformSelect.addEventListener('change', function() {
+            updateMedalTypeVisibility();
+            debounceGenerate();
+        });
+    }
+    
     const checkboxes = document.querySelectorAll('#medalsList input[type="checkbox"]');
     checkboxes.forEach(checkbox => {
         checkbox.addEventListener('change', debounceGenerate);
     });
-
-    updateAvailableOptions();
-
-    document.getElementById('medalType').addEventListener('change', debounceGenerate);
-
+    
+    medalTypeSelect.addEventListener('change', debounceGenerate);
+    
     document.getElementById('generateBtn').addEventListener('click', function() {
         if (document.querySelectorAll('#medalsList input:checked').length > 0) {
             generateImage();
@@ -327,4 +467,13 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Выберите хотя бы одну медаль');
         }
     });
+    
+    // Инициализация - показываем элементы ВНГ если выбрана ВНГ
+    if (serviceSelect.value === 'vnz') {
+        vnzUniformGroup.style.display = 'block';
+        updateMedalTypeVisibility();
+    }
+    
+    // Обновляем доступность званий при загрузке
+    updateRanksAvailability();
 });

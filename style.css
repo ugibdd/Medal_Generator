@@ -193,3 +193,29 @@ h1 {
 }
 
 }
+
+@font-face {
+        font-family: 'Arial Narrow Bold';
+        src: local('Arial Narrow Bold'), 
+             local('Arial Narrow'),
+             local('Arial');
+        font-weight: bold;
+        font-stretch: condensed;
+}
+    
+@font-face {
+        font-family: 'Arial Narrow';
+        src: local('Arial Narrow'), 
+             local('Arial');
+        font-stretch: condensed;
+    }
+	
+.control-group select:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #1a1d24;
+}
+
+.control-group select:disabled:hover {
+    border-color: #2a2f3a;
+}
